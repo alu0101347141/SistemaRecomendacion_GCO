@@ -39,6 +39,17 @@
       elemento.innerHTML = contenido;
     }
 
+    function mostrarMatriz(matriz) {
+      output = '';
+      for (var i = 0; i < matriz.length; i++) {
+        for (var j = 0; j < matriz[i].length; j++) {
+          output += matriz[i][j] + ' ';
+        }
+        output += '\n';
+      }
+      return output;
+    }
+
     function separarElementos() {
       var elemento = document.getElementById('contenido-archivo');
       var matriz = elemento.innerHTML;
@@ -74,41 +85,80 @@
     }     
 
     function pearson(matriz, fil, col) {
+      
       var medias = [], total = 0;
+
       for (var i = 0; i < matriz.length; i++) {
-        var sum = 0;
+        var sum = 0, total = 0;
         for (var j = 0; j < matriz[i].length; j++) {
-          if (matriz[i][j] != '-') {
+          if ((j != col) && (matriz[i][j] != '-')) {
             total++;
             sum += matriz[i][j];
           }
         }
-        medias.push(sum / matriz[i].length);
+        medias.push(sum / total);
       }
-      for (var i = 0; i < matriz.length; i++) {
-        if (matriz[i] == fil) continue;
 
+      var fila_comparada = matriz[fil];
+      var indices_correlacion = [];
+      indices_correlacion[fil] = 1;
+
+      for (var i = 0; i < matriz.length; i++) {
+        if (i == fil) continue;
+        var sumNumerador = 0; 
+        var sumRaizA = 0;
+        var sumRaizB = 0;
+        for (var j = 0; j < matriz[i].length; j++) {
+          if ((matriz[i][j] != '-') && (fila_comparada[j] != '-')) {
+            sumNumerador += (matriz[i][j] - medias[i]) * (fila_comparada[j] - medias[fil]);
+            sumRaizA += Math.pow((matriz[i][j] - medias[i]), 2);
+            sumRaizB += Math.pow((fila_comparada[j] - medias[fil]), 2);
+          }
+        }
+        indices_correlacion[i] = sumNumerador / (Math.sqrt(sumRaizA) * Math.sqrt(sumRaizB));
       }
+      console.table(indices_correlacion);
+
+      indices_copia = indices_correlacion.slice();
+      top_indices = [];
+      for (var i = 0; i < 3; i++) {
+        var i_max = indices_correlacion.indexOf(Math.max(...indices_copia));
+        var i_max_en_copia = indices_copia.indexOf(Math.max(...indices_copia));
+        top_indices.push(i_max);
+        indices_copia.splice(i_max_en_copia, 1);
+      }
+
+      var sumNum = 0, sumDen = 0;
+      for (var i = 0; i < top_indices.length; i++) {
+        sumNum += indices_correlacion[top_indices[i]] * (matriz[i][top_indices[i]] - medias[top_indices[i]]);
+        sumDen += Math.abs(indices_correlacion[top_indices[i]]);
+      }
+      const resultado = medias[fil] + (sumNum / sumDen);
+      console.log(resultado);
+      return resultado;
+
     }
 
     function filtradoColaborativo() {
       var matriz = separarElementos();
-      matriz = normalizarMatriz(matriz);
+      //matriz = normalizarMatriz(matriz);
 
       seleccion = document.getElementById('metrica').value;
 
       for (var i = 0; i < matriz.length; i++) {
-        if (matriz[i].indexOf('-'));
+        if (matriz[i].includes('-')) {
           var j = matriz[i].indexOf('-');
           switch(seleccion) {
             case 'pearson':
-              pearson(matriz, i, j);
+              matriz[i][j] = pearson(matriz, i, j).toFixed(2); 
               break; 
             case 'coseno':
               break;
             case 'euclidea':
               break;
           }
+        }
+        mostrarContenido(mostrarMatriz(matriz));
       }
     }
 
