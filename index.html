@@ -43,36 +43,93 @@
       var elemento = document.getElementById('contenido-archivo');
       var matriz = elemento.innerHTML;
       var arrays = matriz.split('\n');
+      arrays.pop();
       arrays.forEach(function(array, i) {
         arrays[i] = array.split(' ');
       }
       )
-      console.table(arrays);
       var int_arrays = [];
       for (var i = 0; i < arrays.length; i++) {
         var iteration_array = [];
         for (var j = 0; j < arrays[i].length; j++) {
+          if (arrays[i][j] !== '-')
+            iteration_array.push(parseInt(arrays[i][j]));
+          else
           iteration_array.push(arrays[i][j]);
         }
         int_arrays.push(iteration_array);
       }
-      console.table(int_arrays);
       return int_arrays;
     }
 
-    function filtradoColaborativo() {
-      var arrays = separarElementos();
-      alert(arrays[0][0]);
+    function normalizarMatriz(matriz) {
+      const min = 1, max = 5;
+      for (var i = 0; i < matriz.length; i++) {
+        for (var j = 0; j < matriz[i].length; j++) {
+          if (matriz[i][j] !== '-')
+           matriz[i][j] = (matriz[i][j] - parseFloat(min)) / (max - min)
+        }
+      }
+      return matriz;
+    }     
+
+    function pearson(matriz, fil, col) {
+      var medias = [], total = 0;
+      for (var i = 0; i < matriz.length; i++) {
+        var sum = 0;
+        for (var j = 0; j < matriz[i].length; j++) {
+          if (matriz[i][j] != '-') {
+            total++;
+            sum += matriz[i][j];
+          }
+        }
+        medias.push(sum / matriz[i].length);
+      }
+      for (var i = 0; i < matriz.length; i++) {
+        if (matriz[i] == fil) continue;
+
+      }
     }
+
+    function filtradoColaborativo() {
+      var matriz = separarElementos();
+      matriz = normalizarMatriz(matriz);
+
+      seleccion = document.getElementById('metrica').value;
+
+      for (var i = 0; i < matriz.length; i++) {
+        if (matriz[i].indexOf('-'));
+          var j = matriz[i].indexOf('-');
+          switch(seleccion) {
+            case 'pearson':
+              pearson(matriz, i, j);
+              break; 
+            case 'coseno':
+              break;
+            case 'euclidea':
+              break;
+          }
+      }
+    }
+
 
     document.getElementById('file-input')
     .addEventListener('change', leerArchivo, false);
+
   </script>
 
 <input class="waves-effect waves-light btn" type="button" onclick="filtradoColaborativo()"> 
   Desvelar
 </input>
 
-</body>
+<div class="col s3 m3">
+  <select id="metrica" class="center browser-default">
+    <option value="1" selected disabled>Métrica</option>
+    <option value="pearson">Correlación de Pearson</option>
+    <option value="coseno">Distancia coseno</option>
+    <option value="euclidea">Distancia Euclídea</option>
+  </select>
+</div>
 
+</body>
 </html>
